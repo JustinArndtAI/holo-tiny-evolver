@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+hkm_env/
+env/
+venv/
+ENV/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb_checkpoints/
+
+# Models and data
+*.pth
+*.pt
+*.bin
+*.safetensors
+data/raw/
+data/processed/
+models/checkpoints/
+models/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+logs/
+
+# Output files (keep phase results)
+outputs/*.json
+outputs/*.csv
+outputs/*.txt
+!outputs/phase*_results.txt
+!outputs/phase*_report.md
+
+# Cache
+.cache/
+__pycache__/
