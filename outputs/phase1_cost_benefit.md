@@ -2,10 +2,10 @@
 # Phase 1 Enhanced: Cost-Benefit Analysis
 
 ## Performance Metrics
-- Nodes: 2,997
+- Nodes: 2,998
 - Edges: 200
 - Giant Component: 0.1%
-- Entropy: 5.906
+- Entropy: 5.894
 - Density: 0.000045
 
 ## Cost-Benefit Analysis

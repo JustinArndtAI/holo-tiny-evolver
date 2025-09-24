@@ -2,12 +2,12 @@
 # Phase 3 Enhanced: Deep Training Results
 
 ## Performance Metrics
-- Final Loss: 2.543
-- Training Time: 282.2 seconds
+- Final Loss: 2.532
+- Training Time: 1035.4 seconds
 - Epochs: 5
 - Batch Size: 32
 - Samples: 5,000
-- Throughput: 17.7 samples/sec
+- Throughput: 4.8 samples/sec
 - Integration Score: 100.0%
 - Device: cuda
 
@@ -15,28 +15,28 @@
 
 ### Training Efficiency
 - GPU acceleration: Yes
-- Throughput improvement: 1.8x baseline
-- Cost per epoch: $0.056
-- Total training cost: $0.282
+- Throughput improvement: 0.5x baseline
+- Cost per epoch: $0.207
+- Total training cost: $1.035
 
 ### Model Quality
-- Loss reduction: 15.2%
+- Loss reduction: 15.6%
 - Holographic integration: 100.0%
 - Expected perplexity: ~13
 - Convergence rate: 0.39
 
 ### Compute Savings vs Baseline
-- Training time reduction: 53.0%
+- Training time reduction: 0.0%
 - Memory efficiency: ~64% improvement
-- Energy savings: ~21.2%
-- CO2 reduction: ~0.26 kg
+- Energy savings: ~0.0%
+- CO2 reduction: ~0.00 kg
 
 ### Financial Projections
-- Monthly savings (100 runs): $31.78
-- Annual savings: $381.37
-- 5-year TCO reduction: $1906.83
+- Monthly savings (100 runs): $0.00
+- Annual savings: $0.00
+- 5-year TCO reduction: $0.00
 
 ## Status
 ✓ GOOD: 
-Training completed with 2.543 loss in 282 seconds.
+Training completed with 2.532 loss in 1035 seconds.
 The holographic manifold integration enables efficient knowledge representation.

@@ -4,8 +4,8 @@
 ## Performance Metrics
 - Average Growth: 1.0%
 - Average Forgetting: 0.0%
-- Total Update Time: 25.6 seconds
-- Final Node Count: 3,086
+- Total Update Time: 26.0 seconds
+- Final Node Count: 3,087
 - Iterations: 3
 
 ## Benchmark vs GEM
@@ -23,7 +23,7 @@
 - Scalability: Supports 1020 updates before doubling
 
 ### Compute Efficiency
-- Update Time: 8.5s average
+- Update Time: 8.7s average
 - FFT Acceleration: Yes (GPU)
 - Energy Savings: ~50%
 - Carbon Reduction: ~0.50 kg CO2/month
@@ -38,7 +38,7 @@
 - Incremental Update Cost: $0.0026
 - Monthly Savings vs Full Retrain: $49.51
 - Annual Savings: $594.12
-- 5-year TCO Reduction: $2970.59
+- 5-year TCO Reduction: $2970.60
 
 ## Quantum Features
 - FFT Diffraction: Enabled

@@ -5,6 +5,7 @@
   ],
   "attn_pdrop": 0.1,
   "bos_token_id": 50256,
+  "dtype": "float32",
   "embd_pdrop": 0.1,
   "eos_token_id": 50256,
   "initializer_range": 0.02,
@@ -31,8 +32,7 @@
       "max_length": 50
     }
   },
-  "torch_dtype": "float32",
-  "transformers_version": "4.55.4",
+  "transformers_version": "4.56.0",
   "use_cache": true,
   "vocab_size": 50257
 }
