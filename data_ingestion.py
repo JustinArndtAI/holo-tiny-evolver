@@ -11,9 +11,9 @@ class DataIngestor:
         check_gpu_temp()
 
     def download_arxiv(self, size_limit_gb=50):
-        # Download arXiv NIPS subset metadata/full-text (~1GB; expandable)
-        print(f"Downloading arXiv subset (~{size_limit_gb}GB effective) from Hugging Face...")
-        repo_id = "tilii/arxiv-nips"
+        # Download ML-ArXiv Papers subset (abstracts/full-text, ~50GB)
+        print(f"Downloading arXiv subset (~{size_limit_gb}GB) from Hugging Face...")
+        repo_id = "CShorten/ML-ArXiv-Papers"
         subprocess.run([
             "huggingface-cli", "download", repo_id, "--repo-type", "dataset",
             "--local-dir", str(self.target_dir / "arxiv")
