@@ -1,7 +1,7 @@
 import os
 import pickle
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 import numpy as np
 from hkm_wrapper import HKMWrapper
 from utils import check_gpu_temp
@@ -14,15 +14,21 @@ class ModelEvolver:
         self.load_model()
 
     def load_model(self):
-        # Load TinyLlama model (1.1B parameters) instead of GPT-2
-        model_name = "TinyLlama/TinyLlama-1.1B-intermediate-step-1431k-token-2.5T"
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
+        # Load the local quantized TinyLlama from Phase 2
+        model_path = "models/tinyllama-4bit"
+        quantization_config = BitsAndBytesConfig(
+            load_in_4bit=True,
+            bnb_4bit_compute_dtype=torch.float16
+        )
+        self.tokenizer = AutoTokenizer.from_pretrained(model_path)
         self.tokenizer.pad_token = self.tokenizer.eos_token
-        self.model = AutoModelForCausalLM.from_pretrained(model_name)
+        self.model = AutoModelForCausalLM.from_pretrained(
+            model_path,
+            quantization_config=quantization_config,
+            device_map="auto"
+        )
         check_gpu_temp()
-        if torch.cuda.is_available():
-            self.model = self.model.to('cuda')
-        print("TinyLlama model loaded.")
+        print("Local quantized TinyLlama model loaded.")
 
     def load_data(self, subdirs=["bookcorpus", "python_stack", "arxiv", "commoncrawl", "wikipedia"]):
         # Load ingested data from directories
