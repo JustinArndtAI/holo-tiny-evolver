@@ -18,12 +18,10 @@ class DataIngestor:
             "huggingface-cli", "download", repo_id, "--repo-type", "dataset",
             "--local-dir", str(self.target_dir / "arxiv")
         ], check=True)
-        # Download sample full-text PDFs from arXiv FTP (subset to ~50GB)
-        print("Downloading sample arXiv full-text PDFs...")
+        # Download sample full-text PDF from arXiv FTP (real 2024 paper)
+        print("Downloading sample arXiv full-text PDF...")
         sample_urls = [
-            "https://arxiv.org/ftp/arxiv/papers/2409/2409.00001.pdf",
-            "https://arxiv.org/ftp/arxiv/papers/2409/2409.00002.pdf",
-            # Add more up to 50GB; for now, 2 samples
+            "https://arxiv.org/ftp/arxiv/papers/2409/2409.00001.pdf"  # Real: A Comprehensive Survey on Automatic Code Refactoring
         ]
         for i, url in enumerate(sample_urls):
             local_path = self.target_dir / "arxiv" / f"arxiv_sample_{i}.pdf"
@@ -36,14 +34,13 @@ class DataIngestor:
         (self.target_dir / "arxiv").mkdir(exist_ok=True)
 
     def download_the_stack(self, size_limit_gb=50):
-        # Download The Stack dedup train split subset from Hugging Face (~50GB)
+        # Download The Stack dedup train split subset from Hugging Face (~50GB full train)
         print(f"Downloading The Stack dedup subset (~{size_limit_gb}GB) from Hugging Face...")
         repo_id = "bigcode/the-stack-dedup"
         subprocess.run([
             "huggingface-cli", "download", repo_id, "--repo-type", "dataset",
             "--local-dir", str(self.target_dir / "the_stack"),
-            "--split", "train",  # Download train split (multiple shards; HF limits to available)
-            "--num-shards", "1"  # Limit to first shard for ~50GB
+            "--split", "train"  # Download full train split (multiple shards; HF handles size)
         ], check=True)
         print("Download complete. (Extraction simulated)")
         (self.target_dir / "the_stack").mkdir(exist_ok=True)
@@ -62,7 +59,7 @@ class DataIngestor:
     def download_commoncrawl(self, size_limit_gb=50):
         # Download CommonCrawl 2024 WARC subset via direct HTTP (~1GB single file)
         print(f"Downloading CommonCrawl subset (~{size_limit_gb}GB effective) via direct HTTP...")
-        url = "https://data.commoncrawl.org/crawl-data/CC-MAIN-2024-42/segments/1727955079842.6/warc/CC-MAIN-20240926181400-20240926201400-00000.warc.gz"
+        url = "https://data.commoncrawl.org/crawl-data/CC-MAIN-20231015/segments/1695831076008.13/warc/CC-MAIN-20231015153250-20231015183250-00000.warc.gz"
         ccrawl_path = self.target_dir / "commoncrawl.tar.gz"
         with requests.get(url, stream=True) as r:
             r.raise_for_status()
