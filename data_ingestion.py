@@ -11,30 +11,45 @@ class DataIngestor:
         check_gpu_temp()
 
     def download_arxiv(self, size_limit_gb=50):
-        # Download ML-ArXiv Papers subset (abstracts/full-text, ~50GB)
+        # Download ML-ArXiv Papers full-text subset (CSV with abstracts/full-text, ~147MB; expandable)
         print(f"Downloading arXiv subset (~{size_limit_gb}GB) from Hugging Face...")
         repo_id = "CShorten/ML-ArXiv-Papers"
         subprocess.run([
             "huggingface-cli", "download", repo_id, "--repo-type", "dataset",
             "--local-dir", str(self.target_dir / "arxiv")
         ], check=True)
+        # Download sample full-text PDFs from arXiv FTP (subset to ~50GB)
+        print("Downloading sample arXiv full-text PDFs...")
+        sample_urls = [
+            "https://arxiv.org/ftp/arxiv/papers/2409/2409.00001.pdf",
+            "https://arxiv.org/ftp/arxiv/papers/2409/2409.00002.pdf",
+            # Add more up to 50GB; for now, 2 samples
+        ]
+        for i, url in enumerate(sample_urls):
+            local_path = self.target_dir / "arxiv" / f"arxiv_sample_{i}.pdf"
+            with requests.get(url, stream=True) as r:
+                r.raise_for_status()
+                with open(local_path, "wb") as f:
+                    for chunk in r.iter_content(chunk_size=8192):
+                        f.write(chunk)
         print("Download complete. (Extraction simulated)")
         (self.target_dir / "arxiv").mkdir(exist_ok=True)
 
     def download_the_stack(self, size_limit_gb=50):
-        # Download The Stack dedup subset from Hugging Face (~50GB first shard)
+        # Download The Stack dedup train split subset from Hugging Face (~50GB)
         print(f"Downloading The Stack dedup subset (~{size_limit_gb}GB) from Hugging Face...")
         repo_id = "bigcode/the-stack-dedup"
         subprocess.run([
             "huggingface-cli", "download", repo_id, "--repo-type", "dataset",
             "--local-dir", str(self.target_dir / "the_stack"),
-            "--include", "data/train-00000-of-00001.parquet"  # First shard for subset
+            "--split", "train",  # Download train split (multiple shards; HF limits to available)
+            "--num-shards", "1"  # Limit to first shard for ~50GB
         ], check=True)
         print("Download complete. (Extraction simulated)")
         (self.target_dir / "the_stack").mkdir(exist_ok=True)
 
     def download_bookcorpus(self, size_limit_gb=30):
-        # Download BookCorpus from Hugging Face (~5GB full)
+        # Download BookCorpus full dataset from Hugging Face (~5GB)
         print(f"Downloading BookCorpus (~{size_limit_gb}GB) from Hugging Face...")
         repo_id = "bookcorpus/bookcorpus"
         subprocess.run([
@@ -45,9 +60,9 @@ class DataIngestor:
         (self.target_dir / "bookcorpus").mkdir(exist_ok=True)
 
     def download_commoncrawl(self, size_limit_gb=50):
-        # Download CommonCrawl 2023 WARC subset via direct HTTP (~1GB single file)
+        # Download CommonCrawl 2024 WARC subset via direct HTTP (~1GB single file)
         print(f"Downloading CommonCrawl subset (~{size_limit_gb}GB effective) via direct HTTP...")
-        url = "https://data.commoncrawl.org/crawl-data/CC-MAIN-20231015/segments/1695831076008.13/warc/CC-MAIN-20231015153250-20231015183250-00000.warc.gz"
+        url = "https://data.commoncrawl.org/crawl-data/CC-MAIN-2024-42/segments/1727955079842.6/warc/CC-MAIN-20240926181400-20240926201400-00000.warc.gz"
         ccrawl_path = self.target_dir / "commoncrawl.tar.gz"
         with requests.get(url, stream=True) as r:
             r.raise_for_status()
