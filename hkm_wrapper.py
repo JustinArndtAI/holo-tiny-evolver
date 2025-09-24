@@ -10,7 +10,12 @@ class HKMWrapper:
 
     def run_phase(self, phase_num):
         check_gpu_temp()
-        script = f"scripts/phase{phase_num}_enhanced.py" if phase_num in [1, 2, 4] else f"scripts/phase{phase_num}_simple.py"
+        if phase_num == 1:
+            script = "scripts/phase1_enhanced_fixed.py"
+        elif phase_num in [2, 4]:
+            script = f"scripts/phase{phase_num}_enhanced.py"
+        else:
+            script = f"scripts/phase{phase_num}_simple.py"
         subprocess.run(["python", script])
         time.sleep(10)  # Short pause
 
