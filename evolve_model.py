@@ -1,6 +1,7 @@
 import os
 import pickle
-from transformers import GPT2LMHeadModel, GPT2Tokenizer
+import torch
+from transformers import AutoModelForCausalLM, AutoTokenizer
 import numpy as np
 from hkm_wrapper import HKMWrapper
 from utils import check_gpu_temp
@@ -13,15 +14,15 @@ class ModelEvolver:
         self.load_model()
 
     def load_model(self):
-        # Load the latest trained model from Phase 3
-        model_path = "outputs/phase3_model_final"
-        self.tokenizer = GPT2Tokenizer.from_pretrained(model_path)
+        # Load TinyLlama model (1.1B parameters) instead of GPT-2
+        model_name = "TinyLlama/TinyLlama-1.1B-intermediate-step-1431k-token-2.5T"
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.tokenizer.pad_token = self.tokenizer.eos_token
-        self.model = GPT2LMHeadModel.from_pretrained(model_path)
+        self.model = AutoModelForCausalLM.from_pretrained(model_name)
         check_gpu_temp()
         if torch.cuda.is_available():
             self.model = self.model.to('cuda')
-        print("Model loaded.")
+        print("TinyLlama model loaded.")
 
     def load_data(self, subdirs=["bookcorpus", "python_stack", "arxiv", "commoncrawl", "wikipedia"]):
         # Load ingested data from directories
@@ -33,19 +34,26 @@ class ModelEvolver:
                 for file in os.listdir(dir_path):
                     if file.endswith(('.txt', '.csv', '.parquet', '.gz')):
                         file_path = os.path.join(dir_path, file)
-                        with open(file_path, 'r', errors='ignore') as f:
-                            data[subdir].append(f.read())
+                        try:
+                            with open(file_path, 'r', errors='ignore') as f:
+                                data[subdir].append(f.read())
+                        except Exception as e:
+                            print(f"Error reading {file_path}: {e}")
         return data
 
-    def evolve_model(self, data, epochs=3, batch_size=32):
+    def evolve_model(self, data, epochs=3, batch_size=8):  # Reduced batch size for TinyLlama
         # Evolve the model with new data using a simple fine-tuning loop
-        print(f"Evolving model with {sum(len(v) for v in data.values())} samples over {epochs} epochs...")
+        print(f"Evolving TinyLlama with {sum(len(v) for v in data.values())} samples over {epochs} epochs...")
         train_data = []
         for subdir, texts in data.items():
             for text in texts:
                 encoded = self.tokenizer(text, truncation=True, padding='max_length', max_length=128, return_tensors="pt")
                 train_data.append(encoded['input_ids'])
-        train_data = torch.cat(train_data, dim=0)
+        train_data = torch.cat(train_data, dim=0) if train_data else torch.tensor([])
+
+        if train_data.numel() == 0:
+            print("No valid training data loaded. Skipping evolution.")
+            return
 
         optimizer = torch.optim.Adam(self.model.parameters(), lr=5e-5)
         self.model.train()
@@ -53,6 +61,8 @@ class ModelEvolver:
             print(f"Epoch {epoch + 1}/{epochs}")
             for i in range(0, len(train_data), batch_size):
                 batch = train_data[i:i + batch_size].to(self.model.device)
+                if batch.shape[0] == 0:
+                    continue
                 outputs = self.model(batch, labels=batch)
                 loss = outputs.loss
                 loss.backward()
@@ -70,7 +80,7 @@ class ModelEvolver:
         # Load Phase 4 manifold and update with new weights
         with open('outputs/phase4_updated_manifold.pkl', 'rb') as f:
             manifold = pickle.load(f)
-        # Simple integration: Update manifold with new model embeddings (to be enhanced)
+        # Simple integration: Update manifold with new model embeddings
         manifold['model_weights'] = self.model.state_dict()
         with open('outputs/phase6_updated_manifold.pkl', 'wb') as f:
             pickle.dump(manifold, f)
