@@ -81,3 +81,7 @@ MIT
 ## Phase 6 Updates
 - Completed model evolution with successful synthetic data generation and loss computation.
 - Average epoch loss: 1.6221, model saved to outputs/phase6_model_evolved.
+
+## Phase 6 Updates
+- Added SOM clustering with scipy.cluster.vq.kmeans2 for manifold evolution.
+- Used sentence-transformers for synthetic data embeddings.

@@ -1,6 +1,8 @@
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 from datasets import load_dataset
+from sentence_transformers import SentenceTransformer
+from scipy.cluster.vq import kmeans2
 import numpy as np
 from utils import check_gpu_temp
 from hkm_wrapper import HKMWrapper
@@ -8,6 +10,7 @@ from hkm_wrapper import HKMWrapper
 # Initialize
 hkm = HKMWrapper()
 tokenizer = AutoTokenizer.from_pretrained("models/tinyllama-4bit")
+embedder = SentenceTransformer("all-MiniLM-L6-v2")  # For embedding synthetic data
 if not torch.cuda.is_available():
     raise RuntimeError(f"CUDA not available! PyTorch: {torch.__version__}, CUDA Version: {torch.version.cuda or 'None'}. Reinstall with: pip install torch==2.4.1 --index-url https://download.pytorch.org/whl/cu121")
 model = AutoModelForCausalLM.from_pretrained(
@@ -15,7 +18,6 @@ model = AutoModelForCausalLM.from_pretrained(
     device_map="auto",
     dtype=torch.float16
 )
-# Set pad_token_id if undefined
 if tokenizer.pad_token_id is None:
     tokenizer.pad_token_id = tokenizer.eos_token_id
     print(f"Set pad_token_id to eos_token_id: {tokenizer.pad_token_id}")
@@ -57,6 +59,21 @@ def generate_synthetic_data(dataset, num_samples=2):
         print(f"Synthetic data generation failed: {e}")
         return []
 
+def apply_som_clustering(synthetic_data, num_clusters=2):
+    """Apply SOM-like clustering to synthetic data embeddings."""
+    try:
+        embeddings = embedder.encode(synthetic_data, convert_to_numpy=True)
+        print(f"Generated {len(embeddings)} embeddings with shape {embeddings.shape}")
+        centroids, labels = kmeans2(embeddings, k=num_clusters, minit='points')
+        # Select data from the "fittest" cluster (e.g., cluster 0)
+        fittest_indices = [i for i, label in enumerate(labels) if label == 0]
+        fittest_data = [synthetic_data[i] for i in fittest_indices]
+        print(f"Selected {len(fittest_data)} samples from fittest cluster")
+        return fittest_data
+    except Exception as e:
+        print(f"SOM clustering failed: {e}")
+        return synthetic_data  # Fallback to original data
+
 def compute_loss(model, inputs, targets):
     """Compute loss with numerical stability."""
     try:
@@ -76,7 +93,7 @@ def compute_loss(model, inputs, targets):
         return torch.tensor(0.0)
 
 def evolve_model(epochs=3, num_samples=2):
-    """Evolve model using synthetic data."""
+    """Evolve model using synthetic data with SOM clustering."""
     try:
         dataset = load_dataset("parquet", data_files={
             "test": "datasets/mmlu_pro/data/test-00000-of-00001.parquet",
@@ -89,6 +106,11 @@ def evolve_model(epochs=3, num_samples=2):
     if not synthetic_data:
         raise ValueError(f"No synthetic data generated. Dataset keys: {list(dataset['test'][0].keys())}")
     
+    # Apply SOM clustering
+    synthetic_data = apply_som_clustering(synthetic_data)
+    if not synthetic_data:
+        raise ValueError("No data after SOM clustering. Check embedding or clustering.")
+
     for epoch in range(epochs):
         print(f"Epoch {epoch+1}/{epochs}")
         total_loss = 0.0
