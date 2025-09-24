@@ -21,9 +21,10 @@ class DynamicRetriever:
             return pickle.load(f)
 
     def retrieve_context(self, query, manifold):
-        # Extract embeddings or use phase4 outputs for retrieval
-        # Placeholder: Simple keyword match with manifold structure
-        node_texts = [data.get('text', '') for data in manifold['node_metadata']]
+        # Load the original graph from Phase 1 for text data
+        with open('outputs/phase1_enhanced_graph.pkl', 'rb') as f:
+            graph = pickle.load(f)
+        node_texts = [data.get('text', '') for _, data in graph.nodes(data=True)]
         similarities = np.array([self._cosine_sim(query, text) for text in node_texts])
         top_idx = np.argmax(similarities)
         return node_texts[top_idx] if similarities[top_idx] > 0.5 else "No relevant context found"
