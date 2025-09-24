@@ -26,9 +26,10 @@ class HKMWrapper:
             self.run_phase(p)
 
     def retrieve(self, query):
-        # Adapt phase4 for query: Mock/post-process outputs/phase4
-        # Placeholder: Load from outputs/phase4_enhanced.md or models
-        return "Retrieved holographic slice: ..."  # Implement based on POC outputs
+        # Adapt phase4 for query using DynamicRetriever
+        from retrieval import DynamicRetriever
+        retriever = DynamicRetriever()
+        return retriever.generate_response(query)
 
     def load_manifold(self):
         # Load from outputs/phase3_model_final/
